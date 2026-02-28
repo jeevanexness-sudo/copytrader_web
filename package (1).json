@@ -1,0 +1,15 @@
+{
+  "name": "copytrader-web",
+  "version": "1.0.0",
+  "description": "Full Web Copy Trading System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "metaapi.cloud-sdk": "^27.0.0",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.0"
+  }
+}
