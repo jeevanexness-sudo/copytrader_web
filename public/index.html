@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CopyTrader Pro — MT5 Copy Trading</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap');
+:root {
+  --bg:#070f1a; --card:#0d1b2a; --border:#1a2d42;
+  --accent:#00d4ff; --green:#00ff9d; --yellow:#ffd700;
+  --red:#ff4757; --text:#c9d8ee; --muted:#4a6a88;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── Header ── */
+.header{
+  background:linear-gradient(135deg,#0a1628,#0d2040);
+  border-bottom:1px solid var(--border);
+  padding:20px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-size:1.6rem;font-weight:700;color:var(--accent);letter-spacing:3px;}
+.logo span{color:var(--green);}
+.tagline{color:var(--muted);font-size:0.9rem;letter-spacing:1px;}
+
+/* ── Main ── */
+.main{max-width:980px;margin:0 auto;padding:40px 20px;}
+
+/* ── Step tabs ── */
+.tabs{display:flex;gap:4px;margin-bottom:30px;background:var(--card);padding:6px;border-radius:12px;border:1px solid var(--border);}
+.tab{flex:1;padding:12px;text-align:center;border-radius:8px;cursor:pointer;font-weight:600;font-size:1rem;letter-spacing:1px;transition:all 0.2s;color:var(--muted);}
+.tab.active{background:var(--accent);color:#000;}
+.tab:hover:not(.active){color:var(--text);}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px;}
+.card-title{font-size:1.3rem;font-weight:700;margin-bottom:20px;color:var(--accent);letter-spacing:1px;display:flex;align-items:center;gap:10px;}
+
+/* ── Form ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-grid.single{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:0.85rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+.field input, .field select{
+  background:#060e18;border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:0.9rem;
+  outline:none;transition:border-color 0.2s;
+}
+.field input:focus, .field select:focus{border-color:var(--accent);}
+.field input::placeholder{color:var(--muted);}
+
+/* ── Buttons ── */
+.btn{
+  width:100%;padding:14px;border:none;border-radius:10px;
+  font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:700;
+  letter-spacing:2px;cursor:pointer;margin-top:20px;transition:all 0.2s;
+}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#0099bb);color:#000;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,0.3);}
+.btn-green{background:linear-gradient(135deg,var(--green),#00bb77);color:#000;}
+.btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,255,157,0.3);}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* ── Status box ── */
+.status-box{
+  border-radius:10px;padding:16px 20px;margin-top:16px;
+  font-family:'JetBrains Mono',monospace;font-size:0.85rem;display:none;
+}
+.status-box.success{background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.3);color:var(--green);}
+.status-box.error{background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.3);color:var(--red);}
+.status-box.loading{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.3);color:var(--accent);}
+
+/* ── Info box ── */
+.info-box{
+  background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);
+  border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:0.95rem;
+  color:var(--muted);line-height:1.6;
+}
+.info-box strong{color:var(--accent);}
+
+/* ── Steps indicator ── */
+.steps-wrap{display:flex;gap:8px;align-items:center;margin-bottom:28px;}
+.step-dot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.step-dot.done{background:var(--green);}
+.step-dot.active{background:var(--accent);}
+.step-label{font-size:0.8rem;color:var(--muted);letter-spacing:1px;}
+
+/* ── Result card ── */
+.result-card{
+  background:rgba(0,255,157,0.05);border:1px solid rgba(0,255,157,0.25);
+  border-radius:12px;padding:20px;margin-top:16px;display:none;
+}
+.result-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.result-row:last-child{border-bottom:none;}
+.result-key{color:var(--muted);font-size:0.9rem;}
+.result-val{font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--green);}
+
+/* ── Copy button ── */
+.copy-btn{
+  background:rgba(0,212,255,0.1);border:1px solid var(--accent);
+  color:var(--accent);padding:4px 10px;border-radius:5px;
+  cursor:pointer;font-size:0.8rem;margin-left:8px;
+}
+
+/* ── Hidden panels ── */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* ── Loader ── */
+.loader{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">COPY<span>TRADER</span> PRO</div>
+    <div class="tagline">Automated MT5 Copy Trading — No EA Required</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="showPanel('master')">📡 Master Setup</div>
+    <div class="tab" onclick="showPanel('slave')">🔗 Slave Setup</div>
+    <div class="tab" onclick="showPanel('status')">📊 Status</div>
+  </div>
+
+  <!-- ══ MASTER PANEL ══ -->
+  <div class="panel active" id="panel-master">
+    <div class="info-box">
+      <strong>Master Account</strong> — Ikkad enter chesina MT5 account nundi trades copy avutaayi.
+      Meeru ichina <strong>API Key</strong> ikkad enter cheyyi.
+    </div>
+
+    <div class="card">
+      <div class="card-title">📡 Master MT5 Account</div>
+
+      <div class="form-grid single">
+        <div class="field">
+          <label>API Key (Admin nundi receive chesindi)</label>
+          <input type="text" id="m-apikey" placeholder="e.g. USHA_20260331_A7X9">
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-top:16px;">
+        <div class="field">
+          <label>MT5 Login (Account Number)</label>
+          <input type="text" id="m-login" placeholder="e.g. 12107083">
+        </div>
+        <div class="field">
+          <label>MT5 Password</label>
+          <input type="password" id="m-pass" placeholder="Your MT5 password">
+        </div>
+        <div class="field">
+          <label>MT5 Server</label>
+          <input type="text" id="m-server" placeholder="e.g. Vantage-Demo">
+        </div>
+        <div class="field">
+          <label>Broker Name</label>
+          <input type="text" id="m-broker" placeholder="e.g. Vantage, Exness">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="registerMaster()" id="btn-master">
+        CONNECT MASTER ACCOUNT
+      </button>
+
+      <div class="status-box" id="m-status"></div>
+
+      <div class="result-card" id="m-result">
+        <div class="result-row"><span class="result-key">Status</span><span class="result-val" id="r-m-status">—</span></div>
+        <div class="result-row"><span class="result-key">Name</span><span class="result-val" id="r-m-name">—</span></div>
+        <div class="result-row"><span class="result-key">Login</span><span class="result-val" id="r-m-login">—</span></div>
+        <div class="result-row"><span class="result-key">Server</span><span class="result-val" id="r-m-server">—</span></div>
+        <div class="result-row"><span class="result-key">Master ID</span><span class="result-val" id="r-m-id">—<button class="copy-btn" onclick="copyText('r-m-id')">Copy</button></span></div>
+        <div class="result-row"><span class="result-key">Expiry</span><span class="result-val" id="r-m-expiry">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLAVE PANEL ══ -->
+  <div class="panel" id="panel-slave">
+    <div class="info-box">
+      <strong>Slave Account</strong> — Master trades ikkad enter chesina account lo copy avutaayi.
+      Master ID ni master setup tarvata copy cheyyi.
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔗 Slave MT5 Account</div>
+
+      <div class="form-grid single">
+        <div class="field">
+          <label>API Key</label>
+          <input type="text" id="s-apikey" placeholder="e.g. USHA_20260331_A7X9">
+        </div>
+      </div>
+
+      <div class="form-grid" style="margin-top:16px;">
+        <div class="field">
+          <label>MT5 Login (Account Number)</label>
+          <input type="text" id="s-login" placeholder="e.g. 12128567">
+        </div>
+        <div class="field">
+          <label>MT5 Password</label>
+          <input type="password" id="s-pass" placeholder="Your MT5 password">
+        </div>
+        <div class="field">
+          <label>MT5 Server</label>
+          <input type="text" id="s-server" placeholder="e.g. Vantage-Demo">
+        </div>
+        <div class="field">
+          <label>Master ID (Master setup tarvata copy cheyyi)</label>
+          <input type="text" id="s-masterid" placeholder="Paste Master ID here">
+        </div>
+        <div class="field">
+          <label>Risk % (Equity based lot sizing)</label>
+          <input type="number" id="s-risk" value="1.0" min="0.1" max="10" step="0.1">
+        </div>
+        <div class="field">
+          <label>Lot Multiplier</label>
+          <input type="number" id="s-mult" value="1.0" min="0.01" max="10" step="0.01">
+        </div>
+      </div>
+
+      <button class="btn btn-green" onclick="registerSlave()" id="btn-slave">
+        CONNECT & START COPYING
+      </button>
+
+      <div class="status-box" id="s-status"></div>
+
+      <div class="result-card" id="s-result">
+        <div class="result-row"><span class="result-key">Status</span><span class="result-val" id="r-s-status">—</span></div>
+        <div class="result-row"><span class="result-key">Name</span><span class="result-val" id="r-s-name">—</span></div>
+        <div class="result-row"><span class="result-key">Login</span><span class="result-val" id="r-s-login">—</span></div>
+        <div class="result-row"><span class="result-key">Copying From</span><span class="result-val" id="r-s-master">—</span></div>
+        <div class="result-row"><span class="result-key">Risk %</span><span class="result-val" id="r-s-risk">—</span></div>
+        <div class="result-row"><span class="result-key">Expiry</span><span class="result-val" id="r-s-expiry">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STATUS PANEL ══ -->
+  <div class="panel" id="panel-status">
+    <div class="card">
+      <div class="card-title">📊 Account Status</div>
+      <div class="form-grid single">
+        <div class="field">
+          <label>API Key</label>
+          <input type="text" id="st-apikey" placeholder="Your API key">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="checkStatus()">CHECK STATUS</button>
+      <div class="status-box" id="st-status"></div>
+      <div id="st-result" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const API = window.location.origin;
+
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function showStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.className = `status-box ${type}`;
+  el.style.display = 'block';
+  el.innerHTML = msg;
+}
+
+function copyText(id) {
+  const text = document.getElementById(id).textContent.replace('Copy','').trim();
+  navigator.clipboard.writeText(text);
+  alert('Copied: ' + text);
+}
+
+async function registerMaster() {
+  const apiKey    = document.getElementById('m-apikey').value.trim();
+  const mt5Login  = document.getElementById('m-login').value.trim();
+  const mt5Pass   = document.getElementById('m-pass').value.trim();
+  const mt5Server = document.getElementById('m-server').value.trim();
+  const broker    = document.getElementById('m-broker').value.trim();
+
+  if(!apiKey || !mt5Login || !mt5Pass || !mt5Server)
+    return showStatus('m-status', '❌ All fields required!', 'error');
+
+  const btn = document.getElementById('btn-master');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> CONNECTING...';
+  showStatus('m-status', '<span class="loader"></span> Connecting to MT5...', 'loading');
+
+  try {
+    const res  = await fetch(`${API}/api/master/register`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ apiKey, mt5Login, mt5Password: mt5Pass, mt5Server, broker })
+    });
+    const data = await res.json();
+
+    if(!res.ok) {
+      showStatus('m-status', `❌ ${data.error}`, 'error');
+    } else {
+      showStatus('m-status', `✅ Master connected successfully!`, 'success');
+      document.getElementById('m-result').style.display = 'block';
+      document.getElementById('r-m-status').textContent = data.status;
+      document.getElementById('r-m-name').textContent   = data.name;
+      document.getElementById('r-m-login').textContent  = data.login;
+      document.getElementById('r-m-server').textContent = data.server;
+      document.getElementById('r-m-id').innerHTML       = data.masterId + '<button class="copy-btn" onclick="navigator.clipboard.writeText(\''+data.masterId+'\');alert(\'Copied!\')">Copy</button>';
+      document.getElementById('r-m-expiry').textContent = `${data.expiry} (${data.daysLeft} days left)`;
+
+      // Auto fill slave master id
+      document.getElementById('s-masterid').value = data.masterId;
+      document.getElementById('s-apikey').value   = apiKey;
+    }
+  } catch(e) {
+    showStatus('m-status', `❌ Server error: ${e.message}`, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'CONNECT MASTER ACCOUNT';
+}
+
+async function registerSlave() {
+  const apiKey    = document.getElementById('s-apikey').value.trim();
+  const mt5Login  = document.getElementById('s-login').value.trim();
+  const mt5Pass   = document.getElementById('s-pass').value.trim();
+  const mt5Server = document.getElementById('s-server').value.trim();
+  const masterId  = document.getElementById('s-masterid').value.trim();
+  const risk      = document.getElementById('s-risk').value;
+  const mult      = document.getElementById('s-mult').value;
+
+  if(!apiKey || !mt5Login || !mt5Pass || !mt5Server || !masterId)
+    return showStatus('s-status', '❌ All fields required!', 'error');
+
+  const btn = document.getElementById('btn-slave');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> CONNECTING...';
+  showStatus('s-status', '<span class="loader"></span> Connecting slave & starting copy...', 'loading');
+
+  try {
+    const res  = await fetch(`${API}/api/slave/register`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ apiKey, mt5Login, mt5Password: mt5Pass, mt5Server, masterId, riskPercent: risk, multiplier: mult })
+    });
+    const data = await res.json();
+
+    if(!res.ok) {
+      showStatus('s-status', `❌ ${data.error}`, 'error');
+    } else {
+      showStatus('s-status', `✅ Slave connected! Copy trading started!`, 'success');
+      document.getElementById('s-result').style.display = 'block';
+      document.getElementById('r-s-status').textContent = data.status;
+      document.getElementById('r-s-name').textContent   = data.name;
+      document.getElementById('r-s-login').textContent  = data.login;
+      document.getElementById('r-s-master').textContent = data.masterId;
+      document.getElementById('r-s-risk').textContent   = `${data.riskPercent}%`;
+      document.getElementById('r-s-expiry').textContent = data.expiry;
+    }
+  } catch(e) {
+    showStatus('s-status', `❌ Server error: ${e.message}`, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'CONNECT & START COPYING';
+}
+
+async function checkStatus() {
+  const apiKey = document.getElementById('st-apikey').value.trim();
+  if(!apiKey) return showStatus('st-status', '❌ API key required!', 'error');
+
+  showStatus('st-status', '<span class="loader"></span> Checking...', 'loading');
+
+  try {
+    const res  = await fetch(`${API}/api/status?apiKey=${apiKey}`);
+    const data = await res.json();
+
+    if(!res.ok) {
+      showStatus('st-status', `❌ ${data.error}`, 'error');
+      return;
+    }
+
+    showStatus('st-status', `✅ Found!`, 'success');
+
+    let html = `<div style="font-family:'JetBrains Mono',monospace;font-size:0.85rem;">`;
+    html += `<div style="color:var(--accent);margin-bottom:12px;">Client: ${data.client} | Expiry: ${data.expiry} (${data.daysLeft}d)</div>`;
+
+    if(data.masters.length) {
+      html += `<div style="color:var(--green);margin-bottom:8px;">MASTERS (${data.masters.length}):</div>`;
+      data.masters.forEach(m => {
+        html += `<div style="padding:8px;background:rgba(0,255,157,0.05);border-radius:6px;margin-bottom:6px;">
+          Login: ${m.login} | Server: ${m.server} | Status: ${m.status}</div>`;
+      });
+    }
+
+    if(data.slaves.length) {
+      html += `<div style="color:var(--accent);margin:12px 0 8px;">SLAVES (${data.slaves.length}):</div>`;
+      data.slaves.forEach(s => {
+        html += `<div style="padding:8px;background:rgba(0,212,255,0.05);border-radius:6px;margin-bottom:6px;">
+          Login: ${s.login} | Risk: ${s.riskPercent}% | Status: ${s.status}</div>`;
+      });
+    }
+
+    html += `</div>`;
+    document.getElementById('st-result').innerHTML = html;
+  } catch(e) {
+    showStatus('st-status', `❌ Error: ${e.message}`, 'error');
+  }
+}
+</script>
+</body>
+</html>
