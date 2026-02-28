@@ -136,8 +136,8 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);mi
   <!-- ══ MASTER PANEL ══ -->
   <div class="panel active" id="panel-master">
     <div class="info-box">
-      <strong>Master Account</strong> — Ikkad enter chesina MT5 account nundi trades copy avutaayi.
-      Meeru ichina <strong>API Key</strong> ikkad enter cheyyi.
+      <strong>Master Account</strong> — Trades will be copied from this MT5 account to all slave accounts.
+      Enter the <strong>API Key</strong> provided by admin.
     </div>
 
     <div class="card">
@@ -145,7 +145,7 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);mi
 
       <div class="form-grid single">
         <div class="field">
-          <label>API Key (Admin nundi receive chesindi)</label>
+          <label>API Key (Provided by Admin)</label>
           <input type="text" id="m-apikey" placeholder="e.g. USHA_20260331_A7X9">
         </div>
       </div>
@@ -189,8 +189,8 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);mi
   <!-- ══ SLAVE PANEL ══ -->
   <div class="panel" id="panel-slave">
     <div class="info-box">
-      <strong>Slave Account</strong> — Master trades ikkad enter chesina account lo copy avutaayi.
-      Master ID ni master setup tarvata copy cheyyi.
+      <strong>Slave Account</strong> — Trades from Master will be automatically copied to this account.
+      Paste the <strong>Master ID</strong> from the Master Setup step.
     </div>
 
     <div class="card">
@@ -217,7 +217,7 @@ body{font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);mi
           <input type="text" id="s-server" placeholder="e.g. Vantage-Demo">
         </div>
         <div class="field">
-          <label>Master ID (Master setup tarvata copy cheyyi)</label>
+          <label>Master ID (Copy from Master Setup)</label>
           <input type="text" id="s-masterid" placeholder="Paste Master ID here">
         </div>
         <div class="field">
