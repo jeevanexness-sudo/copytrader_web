@@ -200,14 +200,15 @@ async function startCopyEngine(slaveId) {
 // ── ROUTES ────────────────────────────────────────────────────
 
 // ── EA Push/Pull Routes (EA directly uses these) ──────────────
-// Master EA → POST /push (send trades to server)
+// Master EA → POST /push?id=VASANTHI&key=APIKEY
 app.post('/push', (req, res) => {
-  const apiKey = req.query.apiKey || req.body.apiKey;
+  const apiKey   = req.query.key || req.query.apiKey || req.body.key || req.body.apiKey;
+  const masterId = req.query.id  || req.query.masterId || req.body.id;
   if(!apiKey) return res.status(401).json({error:'API key required'});
   const client = verifyKey(apiKey);
   if(!client || !client.valid) return res.status(401).json({error:'Invalid or expired key'});
 
-  const masterName = client.name;
+  const masterName = masterId || client.name;
   db.masterData[masterName] = {
     ...req.body,
     apiKey,
@@ -217,21 +218,26 @@ app.post('/push', (req, res) => {
   res.json({ok:true, master: masterName});
 });
 
-// Slave EA → GET /pull (get master trades)
+// Slave EA → GET /pull?id=VASANTHI&key=APIKEY
 app.get('/pull', (req, res) => {
-  const apiKey  = req.query.apiKey;
-  const masterId = req.query.masterId || req.query.masterID;
+  const apiKey   = req.query.key || req.query.apiKey;
+  const masterId = req.query.id  || req.query.masterId || req.query.masterID;
   if(!apiKey) return res.status(401).json({error:'API key required'});
   const client = verifyKey(apiKey);
   if(!client || !client.valid) return res.status(401).json({error:'Invalid or expired key'});
 
-  // masterId = master name (e.g. VASANTHI)
   const data = db.masterData[masterId];
-  if(!data) return res.json({trades:0, positions:[], equity:0, empty:true});
+  if(!data) {
+    console.log(`📥 [PULL] Slave=${client.name} Master=${masterId} → No data yet`);
+    return res.json({trades:0, positions:[], equity:0, empty:true});
+  }
 
   // Check if master data is stale (>30 seconds)
   const age = Date.now() - (data.lastUpdate||0);
-  if(age > 30000) return res.json({trades:0, positions:[], equity:0, stale:true, age_ms:age});
+  if(age > 30000) {
+    console.log(`📥 [PULL] Slave=${client.name} Master=${masterId} → Stale ${age}ms`);
+    return res.json({trades:0, positions:[], equity:0, stale:true});
+  }
 
   console.log(`📥 [PULL] Slave=${client.name} Master=${masterId} Trades=${data.trades||0}`);
   res.json(data);
